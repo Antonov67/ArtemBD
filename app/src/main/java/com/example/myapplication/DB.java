@@ -112,7 +112,7 @@ public class DB {
     }
 
     // все расходы авторизованного юзера
-    public static ArrayList<String> allExpence(Context context){
+    public static ArrayList<Expence> allExpence(Context context){
         DataBaseHelper dataBaseHelper;
         SQLiteDatabase bd;
         dataBaseHelper = new DataBaseHelper(context);
@@ -123,20 +123,44 @@ public class DB {
         }
         bd = dataBaseHelper.getReadableDatabase();
         Cursor cursor;
-        String sql = "SELECT users.id, users.login, expence.id, expence.value, expence.data FROM users INNER JOIN expence ON users.id = expence.id WHERE users.id = "  + User.USER_ID + " ORDER BY users.id DESC";
+        String sql = "SELECT users.id, expence.value, expence.data, expence.text FROM users INNER JOIN expence ON users.id = expence.id WHERE users.id = "  + User.USER_ID + " ORDER BY users.id DESC";
         cursor = bd.rawQuery(sql,null);
         cursor.moveToFirst();
-        List<String> list = new ArrayList<>();
+        List<Expence> list = new ArrayList<>();
         while (!cursor.isAfterLast()){
-            String str = cursor.getString(0) + " " + cursor.getString(1) + " " + cursor.getString(2) + " " + cursor.getString(3) + " " + cursor.getString(4);
-            Log.d("users777", str);
-            list.add(str);
+           // String str = cursor.getString(0) + " " + cursor.getString(1) + " " + cursor.getString(2) + " " + cursor.getString(3) + " " + cursor.getString(4);
+           // Log.d("users777", str);
+            Expence expence = new Expence(Integer.parseInt(cursor.getString(0)),
+                                          Double.parseDouble(cursor.getString(1)),
+                                          cursor.getString(2),
+                                          cursor.getString(3));
+            list.add(expence);
+
             cursor.moveToNext();
         }
         cursor.close();
-        return (ArrayList<String>) list;
+        Log.d("users777", list.toString());
+        return (ArrayList<Expence>) list;
     }
 
+    //добавление расхода в БД
+    public static void addExpence(Expence expence, Context context){
+        DataBaseHelper dataBaseHelper;
+        SQLiteDatabase bd;
+        dataBaseHelper = new DataBaseHelper(context);
+        try {
+            dataBaseHelper.updateDataBase();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        bd = dataBaseHelper.getReadableDatabase();
 
+       ContentValues values = new ContentValues();
+       values.put("id", expence.getId());
+       values.put("value", expence.getValue());
+       values.put("data", expence.getDate());
+       values.put("text", expence.getText());
+       bd.insert("expence", null, values);
+    }
 
 }
